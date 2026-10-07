@@ -1,6 +1,11 @@
 import { useCallback, useState } from 'react';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
-import { RMap, RMarker, useMap } from 'maplibre-react-components';
+import {
+  RMap,
+  RMarker,
+  RNavigationControl,
+  useMap,
+} from 'maplibre-react-components';
 import { Box, Button, Tooltip, Typography } from '@mui/material';
 import { basemapStyle, transformRequest } from '../kart';
 import type { Sted } from './steder';
@@ -129,6 +134,8 @@ export const RundeSkjerm = ({
             }
           >
             <OppdaterStorrelse />
+            {/* + og - for å zoome når man skal gjette */}
+            <RNavigationControl position="top-left" showCompass={false} />
             {gjett && (
               <RMarker longitude={gjett[0]} latitude={gjett[1]}>
                 <GjettMarkor />
