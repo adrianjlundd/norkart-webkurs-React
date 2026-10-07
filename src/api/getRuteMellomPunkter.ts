@@ -1,9 +1,17 @@
+import type { MultiLineString } from 'geojson';
+
+export type Rute = {
+  RouteGeometry: MultiLineString;
+  // Kostnaden for 'time' er reisetid i minutter
+  CostList: { Name: string; Cost: number }[];
+};
+
 export const getRuteMellomPunkter = async (
   startX: number,
   startY: number,
   stoppX: number,
   stoppY: number
-) => {
+): Promise<Rute | undefined> => {
   const apiKey = import.meta.env.VITE_API_KEY;
   const query = `https://ruteberegner.api.norkart.no/Route/Expanded`;
 
@@ -34,14 +42,25 @@ export const getRuteMellomPunkter = async (
     ZoomLevel: 14,
   };
 
-  // TODO: Fullfør/endre koden for å hente og returnere en kjørerute mellom to punkter
+  try {
+    const apiResult = await fetch(query, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-WAAPI-TOKEN': `${apiKey}`,
+      },
+      body: JSON.stringify(postData),
+    });
 
-  // Hint: Du kan se på getHoydeFromPunkt for å få en idé om hvordan dette kan gjøres.
-  // Dette er en POST request, akkurat som getHoydeFromPunkt.
-
-  // Responsen inneholder bl.a. RouteGeometry (en GeoJSON MultiLineString) som kan vises i
-  // kartet, og en liste med kostnader (CostList) for ruten.
-
-  // Når du har fått til kallet til API-et kan du se i Network-taben i nettleseren eller i
-  // konsollen for å se hvordan responsen ser ut.
+    if (apiResult.ok) {
+      return await apiResult.json();
+    } else {
+      console.error('API request failed with status:', apiResult.status);
+      return undefined;
+    }
+  } catch (error) {
+    console.error('An error occurred while fetching data:', error);
+    return undefined;
+  }
 };

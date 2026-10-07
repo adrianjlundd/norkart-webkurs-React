@@ -1,14 +1,30 @@
-export const getTakflateDataForBygning = async (bygningsNr: number) => {
+import type { Takflate } from './getTakflateDataForPunkt';
+
+export const getTakflateDataForBygning = async (
+  bygningsNr: number
+): Promise<Takflate[]> => {
   const apiKey = import.meta.env.VITE_API_KEY;
   const query = `https://takflater.api.norkart.no/takflater/bygning/${bygningsNr}/utvidet`;
 
-  // TODO: Fullfør/endre koden for hente og returnere takflatedata for takene på en bygning
+  try {
+    const apiResult = await fetch(query, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'X-WAAPI-TOKEN': `${apiKey}`,
+      },
+    });
 
-  // Hint: Du kan se på getAdresseFromSearchText og getHoydeFromPunkt for å få en idé om hvordan
-  // dette kan gjøres.
-
-  // Merk at dette er en GET request, og ikke en POST request!
-
-  // Når du har fått til kallet til API-et kan du se i Network-taben i nettleseren eller i
-  // konsollen for å se hvordan responsen ser ut.
+    if (apiResult.ok) {
+      return await apiResult.json();
+    } else {
+      if (apiResult.status !== 404) {
+        console.error('API request failed with status:', apiResult.status);
+      }
+      return [];
+    }
+  } catch (error) {
+    console.error('An error occurred while fetching data:', error);
+    return [];
+  }
 };

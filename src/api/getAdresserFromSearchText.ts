@@ -4,7 +4,7 @@ export const getAdresserFromSearchText = async (searchText: string) => {
   }
 
   const apiKey = import.meta.env.VITE_API_KEY;
-  const query = `https://fritekstsok.api.norkart.no/suggest/custom?Query=${searchText}&Targets=gateadresse`;
+  const query = `https://fritekstsok.api.norkart.no/suggest/custom?Query=${encodeURIComponent(searchText)}&Targets=gateadresse`;
 
   try {
     const apiResult = await fetch(query, {
