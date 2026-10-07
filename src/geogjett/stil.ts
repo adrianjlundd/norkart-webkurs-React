@@ -1,4 +1,10 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 
 export const LILLA = '#3b1e78';
 export const GRONN = '#6cb928';
@@ -55,4 +61,41 @@ export const useTast = (handling: (() => void) | undefined) => {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [handling]);
+};
+
+// Bakgrunnsmusikk som går i løkke. Stoppes når komponenten forsvinner,
+// altså når man går ut av GeoGjett.
+export const useBakgrunnsmusikk = (url: string, volum = 0.4) => {
+  const lyd = useRef<HTMLAudioElement | null>(null);
+  const [dempet, setDempet] = useState(false);
+
+  useEffect(
+    () => () => {
+      lyd.current?.pause();
+      lyd.current = null;
+    },
+    []
+  );
+
+  // Må kalles fra et klikk, ellers blokkerer nettleseren avspillingen
+  const start = useCallback(() => {
+    if (!lyd.current) {
+      lyd.current = new Audio(url);
+      lyd.current.loop = true;
+      lyd.current.volume = volum;
+    }
+    lyd.current.currentTime = 0;
+    lyd.current
+      .play()
+      .catch((error) => console.warn('Kunne ikke spille av musikk', error));
+  }, [url, volum]);
+
+  const byttDemping = () => {
+    setDempet((forrige) => {
+      if (lyd.current) lyd.current.muted = !forrige;
+      return !forrige;
+    });
+  };
+
+  return { start, dempet, byttDemping };
 };

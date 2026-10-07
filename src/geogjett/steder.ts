@@ -18,6 +18,13 @@ export type Sted = {
 
 // Området stedene trekkes fra: Trondheim by
 const OMRADE = { minLng: 10.3, maxLng: 10.5, minLat: 63.38, maxLat: 63.45 };
+
+// Området man kan gjette innenfor (minikartet låses hit). Stedene må
+// ligge innenfor dette, og alle fasiter er derfor mulige å treffe.
+export const SPILLOMRADE: [[number, number], [number, number]] = [
+  [OMRADE.minLng, OMRADE.minLat],
+  [OMRADE.maxLng, OMRADE.maxLat],
+];
 const SOKERADIUS_METER = 150;
 const MAKS_FORSOK = 25;
 // Stedene i et spill skal ligge et stykke fra hverandre
@@ -44,6 +51,14 @@ export const finnTilfeldigSted = async (andreSteder: Sted[]): Promise<Sted> => {
     if (!bygning?.FkbData?.BygningsOmriss) continue;
 
     const posisjon = midtpunkt(JSON.parse(bygning.FkbData.BygningsOmriss));
+    // Bygningen kan ligge litt utenfor området siden vi søker med en radius
+    const innenfor =
+      posisjon[0] >= OMRADE.minLng &&
+      posisjon[0] <= OMRADE.maxLng &&
+      posisjon[1] >= OMRADE.minLat &&
+      posisjon[1] <= OMRADE.maxLat;
+    if (!innenfor) continue;
+
     const forNaer = andreSteder.some(
       (sted) => avstandKm(sted.posisjon, posisjon) < MIN_AVSTAND_KM
     );

@@ -8,13 +8,12 @@ import {
 } from 'maplibre-react-components';
 import { Box, Button, Tooltip, Typography } from '@mui/material';
 import { basemapStyle, transformRequest } from '../kart';
-import type { Sted } from './steder';
+import { SPILLOMRADE, type Sted } from './steder';
 import type { Hint } from './hint';
 import { LILLA, knappStil, useTast } from './stil';
 import { GjettMarkor, OppdaterStorrelse } from './markorer';
 import { ANTALL_RUNDER, formatPoeng } from './poeng';
 
-const TRONDHEIM: [number, number] = [10.4, 63.42];
 const START_ZOOM = 17.5;
 // Hvor langt (i grader) man kan flytte seg bort fra stedet i flyfotoet
 const BEVEGELSE_LNG = 0.01;
@@ -124,9 +123,10 @@ export const RundeSkjerm = ({
           <RMap
             mapStyle={basemapStyle('standard')}
             initialTransformRequest={transformRequest}
-            initialCenter={TRONDHEIM}
-            initialZoom={10.5}
-            minZoom={8}
+            initialBounds={SPILLOMRADE}
+            // Man kan ikke zoome eller flytte seg utenfor spilleområdet,
+            // og dermed heller ikke gjette utenfor
+            maxBounds={SPILLOMRADE}
             initialAttributionControl={false}
             style={{ height: '100%' }}
             onClick={(e: MapLayerMouseEvent) =>
@@ -190,7 +190,8 @@ const HintPanel = ({
       top: 16,
       left: 16,
       width: 300,
-      maxHeight: 'calc(100% - 32px)',
+      // Plass til lydknappen nederst til venstre
+      maxHeight: 'calc(100% - 80px)',
       overflowY: 'auto',
       bgcolor: 'rgba(26, 11, 61, 0.88)',
       color: 'white',

@@ -8,6 +8,7 @@ export type RosData = {
   EnkeltminneNavn?: string;
   Brannstasjon?: string;
   AvstandBrannstasjon?: number;
+  OyUtenBrannstasjon?: boolean;
   Flom?: string;
   Kvikkleire?: string;
   Steinsprang?: boolean;

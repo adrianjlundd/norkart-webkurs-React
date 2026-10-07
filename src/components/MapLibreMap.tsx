@@ -44,6 +44,7 @@ import { BygningCard } from './BygningCard';
 import { SolCard } from './SolCard';
 import { RuteCard } from './RuteCard';
 import { BefolkningLayer, BefolkningLegend } from './Befolkning';
+import { FunFactKnapp } from '../funfacts/FunFactKnapp';
 
 const TRONDHEIM_COORDS: [number, number] = [10.40565401, 63.4156575];
 
@@ -215,7 +216,7 @@ export const MapLibreMap = () => {
 
   return (
     <RMap
-      minZoom={6}
+      minZoom={4}
       initialCenter={TRONDHEIM_COORDS}
       initialZoom={12}
       mapStyle={NORKART_BASEMAP_STYLE}
@@ -343,6 +344,7 @@ export const MapLibreMap = () => {
           )}
         </Stack>
       </Overlay>
+      <FunFactKnapp />
       <DrawComponent />
     </RMap>
   );

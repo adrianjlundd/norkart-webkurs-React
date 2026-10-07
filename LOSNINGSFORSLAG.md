@@ -15,6 +15,7 @@ spillet **GeoGjett**, som er laget som det kreative kartet (oppgave 6+).
 - [Oppgave 5: Ruteplanlegging](#oppgave-5-ruteplanlegging)
 - [Oppgave 6: Befolkningskart](#oppgave-6-befolkningskart)
 - [Det kreative kartet: GeoGjett](#det-kreative-kartet-geogjett)
+- [Fun facts](#fun-facts)
 - [Filstruktur](#filstruktur)
 - [Hva API-ene returnerer](#hva-api-ene-returnerer)
 - [Kjente begrensninger](#kjente-begrensninger)
@@ -162,7 +163,9 @@ gjette hvor det er.
    - Øverst til høyre vises runde og poeng.
    - Til venstre ligger hintpanelet.
    - Nede til høyre ligger minikartet. Det blir større når musen er over det, og man
-     klikker for å plassere markøren.
+     klikker for å plassere markøren. Det har «+» og «−» for zoom, og er låst til
+     spilleområdet (`maxBounds`), så man kan ikke zoome, flytte seg eller gjette
+     utenfor.
    - «Gjett»-knappen er grå til markøren er plassert. Mellomrom eller Enter gjetter.
 3. **Resultat:**
    - Kartet viser gjettet ditt (blå), fasiten (🏁) og en stiplet linje mellom dem.
@@ -173,6 +176,19 @@ gjette hvor det er.
    - Kartet viser alle fem gjett og fasiter, nummerert.
    - Totalpoeng av 25 000, en vurdering og en tabell per runde.
    - «Spill igjen».
+
+### Musikk
+
+Når man trykker «Spill», starter et chiptune-spor i løkke
+(`public/lyd/geogjett-tema.wav`, 27 s). Det stopper når man går ut av GeoGjett-fanen.
+Knappen nede til venstre slår lyden av og på. Logikken ligger i `useBakgrunnsmusikk`
+i `stil.ts`. Avspillingen må startes fra et klikk, ellers blokkerer nettleseren den.
+
+Sporet er originalt og laget med en liten Python-synth: firkantbølge-melodi,
+trekantbass, arpeggio og trommer på 140 BPM. Ønsket var Jetpack Joyride-temaet, men
+det er opphavsrettslig beskyttet musikk og ble derfor ikke lastet ned og lagt i repoet.
+Vil du bruke en annen lydfil som du har rett til å bruke, kan du erstatte
+`public/lyd/geogjett-tema.wav` med den.
 
 ### Satellittvisning
 
@@ -221,8 +237,9 @@ Logikken ligger i `steder.ts`:
 1. Trekk et tilfeldig punkt i Trondheim (lng 10,30–10,50, lat 63,38–63,45).
 2. Søk etter en bygning innenfor 150 m. Omtrent 60 % av forsøkene treffer, og det
    gjøres opptil 25 forsøk.
-3. Avvis bygningen hvis den ligger nærmere enn 800 m et sted som allerede er valgt.
-4. Bruk midtpunktet i bygningsomrisset som fasit.
+3. Bruk midtpunktet i bygningsomrisset som fasit.
+4. Avvis bygningen hvis midtpunktet ligger utenfor spilleområdet (søkeradiusen kan
+   gi treff litt utenfor), eller nærmere enn 800 m et sted som allerede er valgt.
 5. Hent ROS-data og høyde, og lag hintene.
 
 Spillet starter så snart det første stedet er klart. De neste lastes mens man spiller,
@@ -233,12 +250,60 @@ og «Neste runde» venter hvis neste sted ikke er ferdig ennå.
 `GeoGjett.tsx` styrer fasene `start → runde → resultat → … → slutt`. En `spillId`-ref
 stopper lasting fra et gammelt spill hvis man starter et nytt.
 
+## Fun facts
+
+Knappen **💡 Fun fact** øverst til høyre i Kart-fanen viser en tilfeldig fun fact i et
+lite kort. Alle tallene hentes live fra API-ene eller befolkningsfila, så de er
+ekte data. Kartet markerer bygningen, ruta, ruten eller punktet faktaen handler om
+(rosa), og zoomer dit. Et punkt (for eksempel en fjelltopp) markeres med en
+pulserende ring.
+
+Faktaene vises i tilfeldig rekkefølge, og ingen gjentas før alle 15 er vist.
+
+| Fakta                      | Hvordan den regnes ut                                         |
+| -------------------------- | ------------------------------------------------------------- |
+| Norges tak (Galdhøpiggen)  | Toppunktsøk med høyde-API-et                                  |
+| Gråkallen vs. Torvet       | Toppunktsøk, høyde på Torvet og avstand i luftlinje           |
+| Nidarosdomen               | Antall takflater og høyeste tak-Z minus bakkehøyde            |
+| Kvikkleire under domkirken | ROS: `Kvikkleire`, `FredaBygg`, `KulturmiljoNavn`             |
+| Tyholttårnet               | Bakkehøyde, høyeste takflate og høyde over Torvet             |
+| Munkholmen                 | ROS: `OyUtenBrannstasjon`, fredning og kulturminne            |
+| Trondheim Spektrum         | Takareal og solinnstråling, regnet om til strøm og husstander |
+| Norges tetteste 25 km²     | Ruta med flest innbyggere, og andel av befolkningen           |
+| Trangt om plassen          | De 10 tetteste rutene og deres andel av befolkningen          |
+| Eldste og yngste nabolag   | Høyest og lavest snittalder (ruter med minst 500 innbyggere)  |
+| Lengst nord                | Ruta med nordligste midtpunkt                                 |
+| Helt alene på 25 km²       | Antall ruter med én innbygger, og en tilfeldig av dem         |
+| Trondheim – Oslo           | Rute-API: kjøretid og lengde                                  |
+| Norge på langs             | Rute-API: Lindesnes fyr → Nordkapp                            |
+
+**Toppunktsøk** (`finnToppunkt` i `funfacts/hjelpere.ts`): Høyde-API-et tar rundt 100
+punkter per kall (196 gir feil 400). Søket henter et rutenett på 10 × 10 punkter, og
+gjentar søket i et fire ganger mindre rutenett rundt det høyeste punktet, fire
+ganger til sammen. Gråkallen gir 553 moh. (offisielt 552). Galdhøpiggen ga 2 466 moh.
+med tre runder (offisielt 2 469), og nå brukes fire.
+
+**Stedsnavn** (`finnStedsnavn`): Det finnes ikke noe oppslag fra koordinat til
+stedsnavn. Derfor slår vi opp en bygning i nærheten og bruker `Poststed` fra
+ROS-dataene. Finnes det ingen bygning innenfor 2,5 km, vises faktaen uten stedsnavn.
+
+**Antagelser i utregningene:** Solcellene antas å ha 20 % virkningsgrad, en husstand
+å bruke 16 000 kWh strøm i året, og en fotballbane å være 7 140 m² (105 × 68 m).
+
+**Kartet** kan nå zoomes ut til nivå 4 (før 6), så Norge på langs får plass.
+
+**Dette gikk ikke:** «Eldste bygning» var et ønske, men `AntattByggeaar` er 0
+(ukjent) for alle bygningene vi sjekket, også Nidarosdomen. Kristiansten festning
+ga ingen treff i bygnings-API-et.
+
 ## Filstruktur
 
 Nye og endrede filer:
 
 ```
 LOSNINGSFORSLAG.md            ← dette dokumentet
+public/
+└── lyd/geogjett-tema.wav     Bakgrunnsmusikk til GeoGjett
 src/
 ├── App.tsx                   Fanevalg: Kart / GeoGjett
 ├── kart.ts                   Felles kartoppsett: basemapStyle(), transformRequest
@@ -270,7 +335,11 @@ src/
     ├── steder.ts             Tilfeldige steder
     ├── hint.ts               Hint og kostnader
     ├── poeng.ts              Poengberegning
-    └── stil.ts               Farger, knappestil, hooks (useOpptelling, useTast)
+    └── stil.ts               Farger, knappestil, hooks (useOpptelling, useTast, useBakgrunnsmusikk)
+└── funfacts/
+    ├── FunFactKnapp.tsx      Knapp, kort, markering og zoom
+    ├── fakta.ts              De 15 faktaene
+    └── hjelpere.ts           Toppunktsøk, bygningsdata, stedsnavn, befolkning
 ```
 
 ESLint (`react-refresh/only-export-components`) krever at filer som eksporterer
@@ -286,7 +355,7 @@ Dette fant vi ut underveis, og det er nyttig å vite:
 - Svarer `{ Bygninger: [...] }`.
 - Gir **404** når det ikke finnes noen bygning, ikke en tom liste.
 - `FkbData.BygningsOmriss` er en GeoJSON-streng som må parses med `JSON.parse`.
-- `AntattByggeaar` er `0` når byggeåret er ukjent.
+- `AntattByggeaar` er `0` når byggeåret er ukjent, og det gjelder de fleste bygningene.
 
 **Takflater** (`takflater.api.norkart.no`)
 
@@ -310,6 +379,9 @@ Dette fant vi ut underveis, og det er nyttig å vite:
 
 - Tar imot en liste med punkter.
 - Svarer `PunktHoyder: [{ X, Y, Z }]`.
+- Tar opptil rundt 100 punkter per kall.
+
+**ROS** for øyer har `OyUtenBrannstasjon: true` og `Brannstasjon: null`.
 
 **Basiskart** (`kvp.maps.norkart.no`)
 

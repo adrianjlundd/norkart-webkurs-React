@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import { avstandKm } from '../geo';
 import { finnTilfeldigSted, type Sted } from './steder';
 import { ANTALL_RUNDER, beregnPoeng } from './poeng';
-import { bakgrunn } from './stil';
+import { bakgrunn, useBakgrunnsmusikk } from './stil';
 import { StartSkjerm } from './StartSkjerm';
 import { RundeSkjerm } from './RundeSkjerm';
 import { ResultatSkjerm } from './ResultatSkjerm';
@@ -11,6 +11,8 @@ import { SluttSkjerm } from './SluttSkjerm';
 import type { Resultat } from './Resultatkart';
 
 type Fase = 'start' | 'runde' | 'resultat' | 'slutt';
+
+const MUSIKK_URL = `${import.meta.env.BASE_URL}lyd/geogjett-tema.wav`;
 
 export const GeoGjett = () => {
   const [fase, setFase] = useState<Fase>('start');
@@ -20,11 +22,13 @@ export const GeoGjett = () => {
   const [feil, setFeil] = useState<string | undefined>();
   // Øker for hvert nytt spill, så lasting fra et gammelt spill kan stoppes
   const spillId = useRef(0);
+  const musikk = useBakgrunnsmusikk(MUSIKK_URL);
 
   // Henter stedene ett og ett. Spillet starter så snart det første er klart,
   // og resten lastes mens man spiller.
   const startSpill = async () => {
     const id = ++spillId.current;
+    musikk.start();
     setSteder([]);
     setResultater([]);
     setRunde(0);
@@ -79,7 +83,32 @@ export const GeoGjett = () => {
   const sted = steder[runde];
 
   return (
-    <Box sx={{ height: 'calc(100dvh - var(--header-height))' }}>
+    <Box
+      sx={{
+        height: 'calc(100dvh - var(--header-height))',
+        position: 'relative',
+      }}
+    >
+      {fase !== 'start' && (
+        <Button
+          size="small"
+          onClick={musikk.byttDemping}
+          sx={{
+            position: 'absolute',
+            left: 16,
+            bottom: 16,
+            zIndex: 10,
+            bgcolor: 'rgba(26, 11, 61, 0.85)',
+            color: 'white',
+            borderRadius: 999,
+            px: 2,
+            fontWeight: 700,
+            '&:hover': { bgcolor: 'rgba(26, 11, 61, 1)' },
+          }}
+        >
+          {musikk.dempet ? 'Lyd: av' : 'Lyd: på'}
+        </Button>
+      )}
       {fase === 'start' && <StartSkjerm onStart={startSpill} feil={feil} />}
 
       {fase === 'runde' &&
