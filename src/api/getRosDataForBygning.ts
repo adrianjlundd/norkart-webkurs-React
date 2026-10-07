@@ -1,5 +1,11 @@
 export type RosData = {
   Bygningsnummer: number;
+  Postnummer?: string;
+  Poststed?: string;
+  Grunnkretsnavn?: string;
+  Kyst?: string;
+  AarsDognTrafikk?: string;
+  EnkeltminneNavn?: string;
   Brannstasjon?: string;
   AvstandBrannstasjon?: number;
   Flom?: string;

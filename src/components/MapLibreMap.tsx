@@ -2,7 +2,6 @@ import {
   LngLat,
   type FillLayerSpecification,
   type MapLayerMouseEvent,
-  type RequestTransformFunction,
 } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {
@@ -37,6 +36,7 @@ import {
 import { getTakflateDataForBygning } from '../api/getTakflateDataForBygning';
 import { getRuteMellomPunkter, type Rute } from '../api/getRuteMellomPunkter';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { basemapStyle, transformRequest } from '../kart';
 import { Overlay } from './Overlay';
 import DrawComponent from './DrawComponent';
 import { SearchBar, type Address } from './SearchBar';
@@ -47,20 +47,7 @@ import { BefolkningLayer, BefolkningLegend } from './Befolkning';
 
 const TRONDHEIM_COORDS: [number, number] = [10.40565401, 63.4156575];
 
-const KVP_BASE_URL = 'https://kvp.maps.norkart.no/mvt/';
-
-type NorkartBasemapVariant =
-  | 'standard'
-  | 'standard-without-text'
-  | 'greyscale'
-  | 'greyscale-without-text'
-  | 'darkmode'
-  | 'transparent'
-  | 'hybrid'
-  | 'ortofoto';
-const NORKART_BASEMAP_VARIANT: NorkartBasemapVariant = 'standard';
-
-const NORKART_BASEMAP_STYLE = `${KVP_BASE_URL}norkart-basemap/${NORKART_BASEMAP_VARIANT}/style.json`;
+const NORKART_BASEMAP_STYLE = basemapStyle('standard');
 
 type Modus = 'info' | 'rute';
 
@@ -370,13 +357,3 @@ function MapFlyTo({ lng, lat }: { lng: number; lat: number }) {
 
   return null;
 }
-
-const transformRequest: RequestTransformFunction = (url) => {
-  if (!url.startsWith(KVP_BASE_URL)) {
-    return { url };
-  }
-
-  const apiKey = import.meta.env.VITE_API_KEY;
-  const separator = url.includes('?') ? '&' : '?';
-  return { url: `${url}${separator}api_key=${encodeURIComponent(apiKey)}` };
-};

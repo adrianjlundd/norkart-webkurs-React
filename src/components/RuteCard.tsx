@@ -1,16 +1,6 @@
 import { Card, CardContent, Typography } from '@mui/material';
 import type { Rute } from '../api/getRuteMellomPunkter';
-
-// Avstand i km mellom to punkter (haversine-formelen)
-const avstandKm = ([lng1, lat1]: number[], [lng2, lat2]: number[]) => {
-  const rad = (grader: number) => (grader * Math.PI) / 180;
-  const dLat = rad(lat2 - lat1);
-  const dLng = rad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return 6371 * 2 * Math.asin(Math.sqrt(a));
-};
+import { avstandKm } from '../geo';
 
 const rutelengdeKm = (rute: Rute) =>
   rute.RouteGeometry.coordinates.reduce(

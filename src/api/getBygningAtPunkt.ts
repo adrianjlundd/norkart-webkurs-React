@@ -17,10 +17,11 @@ export type Bygning = {
 
 export const getBygningAtPunkt = async (
   x: number,
-  y: number
+  y: number,
+  maxRadius = 1
 ): Promise<Bygning | undefined> => {
   const apiKey = import.meta.env.VITE_API_KEY;
-  const query = `https://bygning.api.norkart.no/bygninger/byposition?x=${x}&y=${y}&MaxRadius=1&GeometryTextFormat=GeoJson&IncludeFkbData=true`;
+  const query = `https://bygning.api.norkart.no/bygninger/byposition?x=${x}&y=${y}&MaxRadius=${maxRadius}&GeometryTextFormat=GeoJson&IncludeFkbData=true`;
 
   try {
     const apiResult = await fetch(query, {

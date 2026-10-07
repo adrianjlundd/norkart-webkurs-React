@@ -1,5 +1,8 @@
 import type { CSSProperties } from 'react';
+import { Tab, Tabs } from '@mui/material';
 import NorkartLogo from '../assets/norkart_logo.svg';
+
+export type Side = 'kart' | 'geogjett';
 
 const styles: CSSProperties = {
   height: 'var(--header-height)',
@@ -15,11 +18,25 @@ const styles: CSSProperties = {
   zIndex: 1200,
 };
 
-const Header = () => {
+const Header = ({
+  side,
+  setSide,
+}: {
+  side: Side;
+  setSide: (side: Side) => void;
+}) => {
   return (
     <header style={styles}>
       <img height="50px" src={NorkartLogo} />
       <h1 style={{ fontSize: '1.5rem' }}>Norkart Workshop</h1>
+      <Tabs
+        value={side}
+        onChange={(_, nySide: Side) => setSide(nySide)}
+        sx={{ ml: 'auto' }}
+      >
+        <Tab value="kart" label="Kart" />
+        <Tab value="geogjett" label="GeoGjett" />
+      </Tabs>
     </header>
   );
 };
